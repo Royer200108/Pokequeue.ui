@@ -1,13 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Download, RefreshCw, ArrowUpDown } from "lucide-react"
+import { Trash2, Download, RefreshCw, ArrowUpDown } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Skeleton } from "@/components/ui/skeleton"
 
-export default function ReportsTable({ reports, loading, onRefresh, onDownload }) {
+export default function ReportsTable({ reports, loading, onRefresh, onDownload, onDelete }) {
   const [refreshing, setRefreshing] = useState(false)
   const [sortedReports, setSortedReports] = useState([])
   const [sortDirection, setSortDirection] = useState("desc") // "desc" para descendente (más reciente primero)
@@ -90,6 +90,17 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload }
     onDownload(url)
   }
 
+  // Manejar la descarga del CSV
+  const handleDelete = (report) => {
+    const id = getPropertyValue(report, "ReportId")
+    if (!id || id === "N/A") {
+      toast.error("El ID del reporte no está disponible")
+      return
+    }
+    onDelete(id)
+  }
+
+
   // Manejar el refresco de la tabla
   const handleRefresh = async () => {
     try {
@@ -163,9 +174,8 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload }
                   <TableCell>{getPropertyValue(report, "reportId")}</TableCell>
                   <TableCell>
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        isStatusCompleted(report) ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
-                      }`}
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${isStatusCompleted(report) ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
+                        }`}
                     >
                       {getPropertyValue(report, "status")}
                     </span>
@@ -177,10 +187,17 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload }
                   <TableCell>{getPropertyValue(report, "updated")}</TableCell>
                   <TableCell>
                     {isStatusCompleted(report) && (
-                      <Button variant="ghost" size="icon" onClick={() => handleDownload(report)} title="Download CSV">
-                        <Download className="h-4 w-4" />
-                      </Button>
+                      <>
+                        <Button variant="ghost" size="icon" onClick={() => handleDownload(report)} title="Download CSV">
+                          <Download className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(report)} title="Delete CSV">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
+
                     )}
+
                   </TableCell>
                 </TableRow>
               ))

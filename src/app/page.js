@@ -10,7 +10,7 @@ import { AlertCircle } from 'lucide-react'
 import PokemonTypeSelector from "@/components/pokemon-type-selector"
 import ReportsTable from "@/components/reports-table"
 import { getPokemonTypes } from "@/services/pokemon-service"
-import { getReports, createReport } from "@/services/report-service"
+import { getReports, createReport, deleteReport } from "@/services/report-service"
 
 export default function PokemonReportsPage() {
   const [pokemonTypes, setPokemonTypes] = useState([])
@@ -85,6 +85,9 @@ export default function PokemonReportsPage() {
       // Mostrar notificación de éxito
       toast.success(`Se ha generado un nuevo reporte para el tipo ${selectedType}.`)
 
+      //Limpia el tipo de pokémon seleccionado
+      setSelectedType("")
+
       // Refrescar la tabla para mostrar el nuevo reporte
       await loadReports()
 
@@ -104,6 +107,18 @@ export default function PokemonReportsPage() {
     window.open(url, "_blank")
   }
 
+  // Función para eliminar el reporte
+  const handleDeleteReport = async (id) => {
+    // Add logic to delete the report by id
+    console.log(`Deleting report with id: ${id}`)
+
+    //Elimina el reporte usando la API
+    await deleteReport(id)
+
+    //Recarga la tabla de reportes
+    await loadReports()
+  }
+
   const isLoading = loadingTypes || loadingReports
 
   return (
@@ -121,6 +136,7 @@ export default function PokemonReportsPage() {
             </Alert>
           )}
 
+          {/*Contiene la primera parte del formulario (Seleccion de tipos y boton de catch) */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="w-full md:w-2/3">
               <PokemonTypeSelector
@@ -140,12 +156,13 @@ export default function PokemonReportsPage() {
               </Button>
             </div>
           </div>
-
+          {/**Contiene la segunda parte del formulario (la tabla de reportes) */}
           <ReportsTable
             reports={reports}
             loading={loadingReports}
             onRefresh={handleRefreshTable}
             onDownload={handleDownloadCSV}
+            onDelete={handleDeleteReport}
           />
         </CardContent>
       </Card>
