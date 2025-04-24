@@ -1,0 +1,15 @@
+docker build -t pokeui:latest . --load 
+
+docker stop pokeui-container
+docker rm pokeui-container
+
+docker run -d -p 3000:3000 --name pokeui-container pokeui:latest
+
+az login
+az acr login --name acrmypokequeuedev
+
+docker tag pokeui:latest acrmypokequeuedev.azurecr.io/pokeui:latest
+docker tag pokeui:latest acrmypokequeuedev.azurecr.io/pokeui:0.1.0
+
+docker push acrmypokequeuedev.azurecr.io/pokeui:latest
+docker push acrmypokequeuedev.azurecr.io/pokeui:0.1.0
