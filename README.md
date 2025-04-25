@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# PokeQueue UI
 
-## Getting Started
+En este repositorio se encuentra el código fuente de la UI para poder interactuar de forma fluida con la aplicación.
 
-First, run the development server:
+## ¿Qué herramientas y tecnologías utiliza?
+
+Para este proyecto se utilizaron las tecnologías:
+
+* Next.js: Como framework de JavaScript para crear la aplicación web.
+* Tailwind CSS: Como framework CSS.
+
+## ¿Cómo levantar la aplicación en local?
+
+1. Instalar todas las dependencias con:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+    npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Correr el ambiente de pruebas:
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+```bash
+    npm run dev
+```
+Esto desplegará la aplicación en local y será accesible automáticamente desde [http://localhost:3000]
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ¿Cómo contenerizar y hacer el release del proyecto?
+___Observación___ Para poder realizar este proceso es necesario contar previamente Docker instalado.
 
-## Learn More
+1. Hacer el build de la imagen:
+    ```
+    bash docker build -t pokeui:latest . --load
+    ````
 
-To learn more about Next.js, take a look at the following resources:
+2. Crear un contenedor (instancia) de esa imagen para correr la aplicación de forma local:
+    ```bash
+    docker run -d -p 8000:8000 --name pokeui-container --env-file .env pokeui:latest
+    ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+___Observación.___ En caso de haber hecho un build de la imagen nuevamente (luego de hacer cambios en el código fuente de la aplicación) se debe eliminar el contenedor creado previamente para poder crear un nuevo contenedor
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+    docker stop pokeui-container
+    docker rm pokeui-container
+```
 
-## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Proceso de hacer el release de la aplicación
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+___Observación___ Para poder realizar este proceso es necesario contar previamente con azure cli instalado.
+
+1. Iniciar sesión de azure en la consola que se está utilizando:
+
+    ```bash
+    az login
+    ```
+
+2. Indicar el nombre del container registry en el que se subirá el contenedor:
+    ```bash
+        docker run -d -p 8000:8000 --name pokeapi-container --env-file .env pokeapi:latest
+    ```
+
+
+3. Agregar las etiquetas a la nueva imagen que se subirá:
+
+    ```bash
+    docker tag pokeui:latest nombre_container_registry.azurecr.io/pokeui:latest
+
+
+    // Este comando cambiará con cada nueva release que se haga (comenzará siendo la 0.0.0)
+    docker tag pokeui:latest nombre_container_registry.azurecr.io/pokeui:0.0.0
+    ```
+
+4. Subir (hacer push) de la imagen previamente etiquetada al azure container registry:
+
+    ```bash
+    docker push nombre_container_registry.azurecr.io/pokeui:latest
+
+    docker push nombre_container_registry.azurecr.io/pokeui:0.0.0
+    ```
