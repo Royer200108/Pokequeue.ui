@@ -46,7 +46,7 @@ export async function createReport(pokemonType) {
 
 export async function deleteReport(id) {
   try {
-    const response = await fetch(`http://localhost:8000/api/delete/request/${id}`, {
+    const response = await fetch(`${settings.URL}/api/delete/request/${id}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

@@ -6,11 +6,15 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Modal } from "@/components/ui/modal"
 
 export default function ReportsTable({ reports, loading, onRefresh, onDownload, onDelete }) {
   const [refreshing, setRefreshing] = useState(false)
   const [sortedReports, setSortedReports] = useState([])
   const [sortDirection, setSortDirection] = useState("desc") // "desc" para descendente (más reciente primero)
+  const [selectedReport, setSelectedReport] = useState([])    // Estado para el reporte candidato a eliminarse
+
+  const [open, setOpen] = useState(false)
 
   // Ordenar los reportes cuando cambian o cuando cambia la dirección de ordenamiento
   useEffect(() => {
@@ -90,15 +94,24 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload, 
     onDownload(url)
   }
 
-  // Manejar la descarga del CSV
-  const handleDelete = (report) => {
-    const id = getPropertyValue(report, "ReportId")
+  // Manejar la eliminación del CSV
+  const handleDelete = () => {
+    const id = getPropertyValue(selectedReport, "ReportId");
+    setSelectedReport([]);
+
     if (!id || id === "N/A") {
-      toast.error("El ID del reporte no está disponible")
-      return
+      toast.error("El ID del reporte no está disponible");
+      return;
     }
-    onDelete(id)
-  }
+
+    onDelete(id);
+    toast.success("El reporte ha sido eliminado correctamente");
+
+    // Cierra la ventana modal después de x segundos
+    setTimeout(() => {
+      setOpen(false);
+    }, 1000);
+  };
 
 
   // Manejar el refresco de la tabla
@@ -191,7 +204,7 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload, 
                         <Button variant="ghost" size="icon" onClick={() => handleDownload(report)} title="Download CSV">
                           <Download className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(report)} title="Delete CSV">
+                        <Button variant="ghost" size="icon" onClick={() => { setOpen(true), setSelectedReport(report) }} title="Delete CSV">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </>
@@ -211,6 +224,24 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload, 
           </TableBody>
         </Table>
       )}
+      <div className="p-8">
+        <Button onClick={() => setOpen(true)}>Abrir Modal</Button>
+
+        <Modal open={open} onClose={() => setOpen(false)}>
+          <h2 className="text-lg font-semibold mb-2">Borrar registro numero {getPropertyValue(selectedReport, "reportId")}</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            ¿Estás seguro de borrar este registro permanentemente?
+          </p>
+          <div className="flex justify-end gap-2">
+            <Button variant="secondary" onClick={() => setOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={() => handleDelete()}>
+              Confirmar
+            </Button>
+          </div>
+        </Modal>
+      </div>
     </div>
   )
 }

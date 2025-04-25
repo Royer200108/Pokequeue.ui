@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from 'lucide-react'
 
+
 import PokemonTypeSelector from "@/components/pokemon-type-selector"
 import ReportsTable from "@/components/reports-table"
 import { getPokemonTypes } from "@/services/pokemon-service"
@@ -20,6 +21,8 @@ export default function PokemonReportsPage() {
   const [creatingReport, setCreatingReport] = useState(false)
   const [error, setError] = useState(null)
   const [selectedType, setSelectedType] = useState("")
+
+
 
   // Cargar los tipos de Pokémon
   useEffect(() => {
@@ -166,6 +169,9 @@ export default function PokemonReportsPage() {
           />
         </CardContent>
       </Card>
-    </div>
+
+
+
+    </div >
   )
 }
