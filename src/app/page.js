@@ -203,6 +203,7 @@ export default function PokemonReportsPage() {
                   const value = e.target.value;
                   if (value > pokemonByType) {
                     e.target.value = pokemonByType;
+                    setInputValue(pokemonByType)
                   }
                 }}
                 onPaste={(e) => {
@@ -211,10 +212,14 @@ export default function PokemonReportsPage() {
                     e.preventDefault();
                   }
                 }}
-                placeholder="Número máximo de registros"
+                placeholder={"El número máximo de registros es " + pokemonByType}
                 disabled={!selectedType}
                 required
               />
+              <p className={inputValue > pokemonByType ? "text-red-500" : "hidden"}>
+                {inputValue} El número máximo de Pokémon por tipo es {pokemonByType}
+
+              </p>
 
               <span className="validity"></span>
             </div>

@@ -226,7 +226,6 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload, 
         </Table>
       )}
       <div className="p-8">
-        <Button onClick={() => setOpen(true)}>Abrir Modal</Button>
 
         <Modal open={open} onClose={() => setOpen(false)}>
           <h2 className="text-lg font-semibold mb-2">Borrar registro numero {getPropertyValue(selectedReport, "reportId")}</h2>
