@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react"
 import { Trash2, Download, RefreshCw, ArrowUpDown } from "lucide-react"
 import { toast } from "sonner"
-import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Skeleton } from "@/components/ui/skeleton"
+
+import { Button } from "@/components/ui/button"
 import { Modal } from "@/components/ui/modal"
 
 export default function ReportsTable({ reports, loading, onRefresh, onDownload, onDelete }) {

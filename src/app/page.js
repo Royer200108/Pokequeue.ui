@@ -1,16 +1,17 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { toast } from 'sonner'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from 'lucide-react'
 
+import { Input } from "@/components/ui/input"
 
 import PokemonTypeSelector from "@/components/pokemon-type-selector"
 import ReportsTable from "@/components/reports-table"
-import { getPokemonTypes } from "@/services/pokemon-service"
+import { getPokemonTypes, getPokemonByType } from "@/services/pokemon-service"
 import { getReports, createReport, deleteReport } from "@/services/report-service"
 
 export default function PokemonReportsPage() {
@@ -22,7 +23,11 @@ export default function PokemonReportsPage() {
   const [error, setError] = useState(null)
   const [selectedType, setSelectedType] = useState("")
 
+  const [pokemonByType, setPokemonByType] = useState(0)
+  const [inputValue, setInputValue] = useState("")
 
+  // Referencia al input para vaciar el contenido
+  const inputRef = useRef(null);
 
   // Cargar los tipos de Pokémon
   useEffect(() => {
@@ -83,13 +88,15 @@ export default function PokemonReportsPage() {
       setCreatingReport(true)
 
       // Crear un nuevo reporte usando la API
-      await createReport(selectedType)
+      await createReport(selectedType, inputValue)
 
       // Mostrar notificación de éxito
       toast.success(`Se ha generado un nuevo reporte para el tipo ${selectedType}.`)
 
-      //Limpia el tipo de pokémon seleccionado
+      //Limpia el tipo de pokémon seleccionado y el input
+      setInputValue("")
       setSelectedType("")
+      handleButtonClick()
 
       // Refrescar la tabla para mostrar el nuevo reporte
       await loadReports()
@@ -122,6 +129,28 @@ export default function PokemonReportsPage() {
     await loadReports()
   }
 
+  // Función para obtener el número máximo de Pokémon por tipo
+  useEffect(() => {
+    const fetchPokemonByType = async () => {
+      if (selectedType) {
+        const count = await getPokemonByType(selectedType)
+        setPokemonByType(count)
+        console.log("Número máximo de Pokémon por tipo:", count)
+      } else {
+        setPokemonByType(0)
+      }
+    }
+
+    fetchPokemonByType()
+  }, [selectedType])
+
+  const handleButtonClick = () => {
+    // Limpiar el valor directamente en el DOM
+    if (inputRef.current) {
+      inputRef.current.value = '';
+    }
+  };
+
   const isLoading = loadingTypes || loadingReports
 
   return (
@@ -141,19 +170,60 @@ export default function PokemonReportsPage() {
 
           {/*Contiene la primera parte del formulario (Seleccion de tipos y boton de catch) */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="w-full md:w-2/3">
+            <div className="w-full md:w-2/3 flex flex-row space-between">
               <PokemonTypeSelector
+
                 pokemonTypes={pokemonTypes}
                 selectedType={selectedType}
                 onTypeChange={setSelectedType}
                 loading={loadingTypes}
+
               />
+
+              <Input
+                ref={inputRef}
+                type="number"
+                min="1"
+                max={pokemonByType}
+                onKeyDown={(e) => {
+                  const isNumberKey = /^\d+$/.test(e.key);
+                  const isControlKey = [
+                    "Backspace",
+                    "ArrowLeft",
+                    "ArrowRight",
+                    "Delete",
+                  ].includes(e.key);
+
+                  if (!isNumberKey && !isControlKey) {
+                    e.preventDefault();
+                  }
+                }}
+                onChange={(e) => {
+                  setInputValue(e.target.value);
+                  const value = e.target.value;
+                  if (value > pokemonByType) {
+                    e.target.value = pokemonByType;
+                  }
+                }}
+                onPaste={(e) => {
+                  const text = e.clipboardData.getData("text");
+                  if (!/^\d+$/.test(text)) {
+                    e.preventDefault();
+                  }
+                }}
+                placeholder="Número máximo de registros"
+                disabled={!selectedType}
+                required
+              />
+
+              <span className="validity"></span>
             </div>
             <div className="w-full md:w-1/3">
               <Button
                 onClick={catchThemAll}
-                disabled={!selectedType || isLoading || creatingReport}
+                disabled={!selectedType || isLoading || creatingReport || inputValue <= 0}
                 className="w-full font-bold"
+
               >
                 {creatingReport ? "Creating..." : isLoading ? "Loading..." : "Catch them all!"}
               </Button>
